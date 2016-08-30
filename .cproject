@@ -38,6 +38,7 @@
 								<option id="gnu.cpp.link.option.libs.670547926" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="opencv_imgproc"/>
 									<listOptionValue builtIn="false" value="opencv_imgcodecs"/>
+									<listOptionValue builtIn="false" value="opencv_calib3d"/>
 									<listOptionValue builtIn="false" value="opencv_flann"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
 									<listOptionValue builtIn="false" value="opencv_features2d"/>
@@ -94,6 +95,8 @@
 								</option>
 								<option id="gnu.cpp.link.option.libs.1219163288" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="opencv_imgproc"/>
+									<listOptionValue builtIn="false" value="opencv_imgcodecs"/>
+									<listOptionValue builtIn="false" value="opencv_calib3d"/>
 									<listOptionValue builtIn="false" value="opencv_flann"/>
 									<listOptionValue builtIn="false" value="opencv_highgui"/>
 									<listOptionValue builtIn="false" value="opencv_features2d"/>
