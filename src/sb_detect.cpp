@@ -7,6 +7,7 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/xfeatures2d.hpp>
@@ -16,6 +17,10 @@ using namespace cv::xfeatures2d;
 
 void readme();
 void edge_detect(OutputArray dst);
+#ifndef WIN32
+void _splitpath(const char *path, char *drive, char *dir, char *fname, char *ext);
+static void _split_whole_name(const char *whole_name, char *fname, char *ext);
+#endif
 
 int main(int argc, char** argv )
 {
@@ -94,11 +99,6 @@ int main(int argc, char** argv )
 		if( dist > max_dist ) max_dist = dist;
 	}
 
-	if (debug) {
-		printf("-- Max dist : %f \n", max_dist );
-		printf("-- Min dist : %f \n", min_dist );
-	}
-
 	//-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
 	std::vector< DMatch > good_matches;
 
@@ -113,10 +113,6 @@ int main(int argc, char** argv )
 	if (0 >= good_matches.size()) {
 		printf("have no object image in scene image");
 		return -1;
-	}
-
-	if (debug) {
-		printf("the size of good_matches is %ld\n", good_matches.size());
 	}
 
 	Mat img_matches;
@@ -156,10 +152,23 @@ int main(int argc, char** argv )
 	printf("%f %f\n", center_point.x, center_point.y);
 
 	if (debug) {
+		//-- Save detected matches
+		char drive[128];
+		char dir[256];
+		char fname[128];
+		char ext[128];
+		char dst_img[256];
+
+		_splitpath(argv[1], drive, dir, fname, ext);
+		sprintf(dst_img, "./result/%s.jpg", fname);
+		imwrite( dst_img, img_matches );
+
 		//-- Show detected matches
-		namedWindow("Good Matches & Object detection", WINDOW_NORMAL );
-		imshow( "Good Matches & Object detection", img_matches );
-		waitKey(0);
+		/*
+		   namedWindow("Good Matches & Object detection", WINDOW_NORMAL );
+		   imshow( "Good Matches & Object detection", img_matches );
+		   waitKey(0);
+		 */
 	}
 
 	return 0;
@@ -188,3 +197,58 @@ void edge_detect(OutputArray dst) {
 	convertScaleAbs( abs_dst, dst );
 }
 
+#ifndef WIN32
+void _splitpath(const char *path, char *drive, char *dir, char *fname, char *ext)
+{
+	const char *p_whole_name;
+
+	drive[0] = '\0';
+	if (NULL == path)
+	{
+		dir[0] = '\0';
+		fname[0] = '\0';
+		ext[0] = '\0';
+		return;
+	}
+
+	if ('/' == path[strlen(path)])
+	{
+		strcpy(dir, path);
+		fname[0] = '\0';
+		ext[0] = '\0';
+		return;
+	}
+
+	p_whole_name = rindex(path, '/');
+	if (NULL != p_whole_name)
+	{
+		p_whole_name++;
+		_split_whole_name(p_whole_name, fname, ext);
+
+		snprintf(dir, p_whole_name - path, "%s", path);
+	}
+	else
+	{
+		_split_whole_name(path, fname, ext);
+		dir[0] = '\0';
+	}
+}
+
+static void _split_whole_name(const char *whole_name, char *fname, char *ext)
+{
+	const char *p_ext;
+
+	p_ext = rindex(whole_name, '.');
+	if (NULL != p_ext)
+	{
+		strcpy(ext, p_ext);
+		snprintf(fname, p_ext - whole_name + 1, "%s", whole_name);
+	}
+	else
+	{
+		ext[0] = '\0';
+		strcpy(fname, whole_name);
+	}
+}
+
+#endif
