@@ -26,7 +26,7 @@ int main(int argc, char** argv )
 	}
 
 	int debug = 0;
-	if (argc == 4) {
+	if (argc == 4 && 0 == strcmp(argv[3], "debug")) {
 		debug = 1;
 	}
 
@@ -105,7 +105,18 @@ int main(int argc, char** argv )
 	for( int i = 0; i < descriptors_object.rows; i++ )
 	{
 		if( matches[i].distance < 3*min_dist )
-		{ good_matches.push_back( matches[i]); }
+		{
+			good_matches.push_back( matches[i]);
+		}
+	}
+
+	if (0 >= good_matches.size()) {
+		printf("have no object image in scene image");
+		return -1;
+	}
+
+	if (debug) {
+		printf("the size of good_matches is %ld\n", good_matches.size());
 	}
 
 	Mat img_matches;
@@ -117,11 +128,7 @@ int main(int argc, char** argv )
 	std::vector<Point2f> obj;
 	std::vector<Point2f> scene;
 
-	if (debug) {
-		printf("the size of good_matches is %d\n", good_matches.size());
-	}
-
-	for( int i = 0; i < good_matches.size(); i++ )
+	for( unsigned int i = 0; i < good_matches.size(); i++ )
 	{
 		//-- Get the keypoints from the good matches
 		obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
