@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project( sb_detect )
+find_package( OpenCV REQUIRED )
+add_executable( sb_detect src/sb_detect.cpp )
+target_link_libraries( sb_detect ${OpenCV_LIBS} )
