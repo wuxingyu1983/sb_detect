@@ -149,7 +149,7 @@ int main(int argc, char** argv )
 
 	Point2f center_point = (scene_corners[0] + scene_corners[1] + scene_corners[2] + scene_corners[3]) / 4 + Point2f( img_object.cols, 0);
 	circle( img_matches, center_point, 10, Scalar(0, 255, 0), 5);
-	printf("%f %f\n", center_point.x, center_point.y);
+	printf("%f %f", center_point.x, center_point.y);
 
 	if (debug) {
 		//-- Save detected matches
