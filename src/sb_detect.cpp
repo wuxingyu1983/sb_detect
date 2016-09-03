@@ -16,7 +16,7 @@ using namespace cv;
 using namespace cv::xfeatures2d;
 
 void readme();
-void edge_detect(OutputArray dst);
+Mat edge_detect(OutputArray dst);
 #ifndef WIN32
 void _splitpath(const char *path, char *drive, char *dir, char *fname, char *ext);
 static void _split_whole_name(const char *whole_name, char *fname, char *ext);
@@ -32,7 +32,7 @@ int main(int argc, char** argv )
 
 	Mat img_scene, img_object;
 	img_scene = imread( argv[1], CV_LOAD_IMAGE_GRAYSCALE );
-	edge_detect(img_scene);
+	img_scene = edge_detect(img_scene);
 
 	if ( !img_scene.data )
 	{
@@ -72,7 +72,7 @@ int main(int argc, char** argv )
 			resize(img_object_src, img_object, Size(int((float)img_object_src.cols * dpi / 320), int((float)img_object_src.rows * dpi / 320)));
 
 			// 边界检测
-			edge_detect(img_object);
+			img_object = edge_detect(img_object);
 
 			// 保存模板
 			imwrite( dst_object, img_object );
@@ -89,7 +89,7 @@ int main(int argc, char** argv )
 		result.create( result_rows, result_cols, CV_32FC1 );
 		matchTemplate( img_scene, img_object, result, CV_TM_CCOEFF_NORMED);
 
-		normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+		//		normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
 
 		/// Localizing the best match with minMaxLoc
 		double minVal; double maxVal; Point minLoc; Point maxLoc;
@@ -99,7 +99,14 @@ int main(int argc, char** argv )
 
 		matchLoc = maxLoc;
 
-		printf("%d %d", (matchLoc.x + matchLoc.x + img_object.cols) / 2, (matchLoc.y + matchLoc.y + img_object.rows) / 2);
+		if (0.2 < maxVal) {
+			// 较好的匹配
+			printf("%d %d", (matchLoc.x + matchLoc.x + img_object.cols) / 2, (matchLoc.y + matchLoc.y + img_object.rows) / 2);
+		}
+		else {
+			// 差一些的匹配
+			printf("-1 -1");
+		}
 
 		/// Show me what you got
 		rectangle( img_display, matchLoc, Point( matchLoc.x + img_object.cols , matchLoc.y + img_object.rows ), Scalar(255, 255, 0), 4, 8, 0 );
@@ -111,7 +118,7 @@ int main(int argc, char** argv )
 			//-- Save detected matches
 			char dst_img[256];
 			_splitpath(argv[1], drive, dir, fname, ext);
-			sprintf(dst_img, "./result/template_%s.jpg", fname);
+			sprintf(dst_img, "./result/template_%f_%s.jpg", maxVal, fname);
 			imwrite( dst_img, img_display );
 			/*
 			   const char* image_window = "Source Image";
@@ -139,7 +146,7 @@ int main(int argc, char** argv )
 			return -1;
 		}
 
-		edge_detect(img_object);
+		img_object = edge_detect(img_object);
 
 		std::vector<KeyPoint> keypoints_object, keypoints_scene;
 
@@ -268,7 +275,8 @@ void readme()
 	std::cout << "Method : feature or template\n" << std::endl;
 }
 
-void edge_detect(OutputArray dst) {
+Mat edge_detect(OutputArray src) {
+#if 0
 	// laplace edge detect
 	int kernel_size = 3;
 	int scale = 1;
@@ -283,6 +291,27 @@ void edge_detect(OutputArray dst) {
 	/// Apply Laplace function
 	Laplacian( dst, abs_dst, ddepth, kernel_size, scale, delta, BORDER_DEFAULT );
 	convertScaleAbs( abs_dst, dst );
+#endif
+
+	Mat dst;
+	Mat detected_edges;
+
+	/// Reduce noise with a kernel 3x3
+	blur( src, detected_edges, Size(3,3) );
+
+	int lowThreshold = 30;
+	int ratio = 3;
+	int kernel_size = 3;
+
+	/// Canny detector
+	Canny( detected_edges, detected_edges, lowThreshold, lowThreshold*ratio, kernel_size );
+
+	/// Using Canny's output as a mask, we display our result
+	dst = Scalar::all(0);
+
+	src.copyTo( dst, detected_edges);
+
+	return dst;
 }
 
 #ifndef WIN32
