@@ -102,24 +102,29 @@ int main(int argc, char** argv )
 		if (0.2 < maxVal) {
 			// 较好的匹配
 			printf("%d %d", (matchLoc.x + matchLoc.x + img_object.cols) / 2, (matchLoc.y + matchLoc.y + img_object.rows) / 2);
+
+			/// Show me what you got
+			rectangle( img_display, matchLoc, Point( matchLoc.x + img_object.cols , matchLoc.y + img_object.rows ), Scalar(255, 255, 0), 4, 8, 0 );
+			rectangle( result, matchLoc, Point( matchLoc.x + img_object.cols , matchLoc.y + img_object.rows ), Scalar(255, 255, 0), 4, 8, 0 );
+
+			circle( img_display, Point((matchLoc.x + matchLoc.x + img_object.cols) / 2, (matchLoc.y + matchLoc.y + img_object.rows) / 2), 10, Scalar(255, 255, 0), 5);
 		}
 		else {
 			// 差一些的匹配
 			printf("-1 -1");
 		}
 
-		/// Show me what you got
-		rectangle( img_display, matchLoc, Point( matchLoc.x + img_object.cols , matchLoc.y + img_object.rows ), Scalar(255, 255, 0), 4, 8, 0 );
-		rectangle( result, matchLoc, Point( matchLoc.x + img_object.cols , matchLoc.y + img_object.rows ), Scalar(255, 255, 0), 4, 8, 0 );
-
-		circle( img_display, Point((matchLoc.x + matchLoc.x + img_object.cols) / 2, (matchLoc.y + matchLoc.y + img_object.rows) / 2), 10, Scalar(255, 255, 0), 5);
-
 		{
 			//-- Save detected matches
 			char dst_img[256];
 			_splitpath(argv[1], drive, dir, fname, ext);
 			sprintf(dst_img, "./result/template_%f_%s.jpg", maxVal, fname);
-			imwrite( dst_img, img_display );
+
+			std::vector<int> compression_params;
+			compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+			compression_params.push_back(60);
+
+			imwrite( dst_img, img_display, compression_params );
 			/*
 			   const char* image_window = "Source Image";
 			   const char* result_window = "Result window";
